@@ -1,0 +1,82 @@
+<div class="p-4 sm:p-6 lg:p-8 space-y-8">
+  <!-- Key Metrics -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="p-6 bg-white rounded-lg shadow">
+      <h3 class="text-sm font-medium text-slate-500">Total Revenue</h3>
+      <p class="mt-2 text-3xl font-semibold text-slate-900">₹{{ keyMetrics().totalRevenue.toLocaleString('en-IN') }}</p>
+    </div>
+    <div class="p-6 bg-white rounded-lg shadow">
+      <h3 class="text-sm font-medium text-slate-500">Total Orders</h3>
+      <p class="mt-2 text-3xl font-semibold text-slate-900">{{ keyMetrics().totalOrders.toLocaleString() }}</p>
+    </div>
+    <div class="p-6 bg-white rounded-lg shadow">
+      <h3 class="text-sm font-medium text-slate-500">New Customers</h3>
+      <p class="mt-2 text-3xl font-semibold text-slate-900">{{ keyMetrics().newCustomers.toLocaleString() }}</p>
+    </div>
+  </div>
+
+  <!-- Sales Analytics and Top Products -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Sales Chart -->
+    <div class="lg:col-span-2 p-6 bg-white rounded-lg shadow">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+        <h2 class="text-xl font-semibold text-slate-900">Sales</h2>
+        <div class="mt-2 sm:mt-0 inline-flex rounded-md shadow-sm bg-slate-100 p-1 space-x-1">
+          <button (click)="setSalesPeriod('daily')" 
+                  class="px-3 py-1 text-sm font-medium rounded-md transition-colors"
+                  [class.bg-white]="salesPeriod() === 'daily'"
+                  [class.text-slate-900]="salesPeriod() === 'daily'"
+                  [class.text-slate-600]="salesPeriod() !== 'daily'"
+                  [class.shadow-sm]="salesPeriod() === 'daily'">
+            Daily
+          </button>
+          <button (click)="setSalesPeriod('monthly')" 
+                  class="px-3 py-1 text-sm font-medium rounded-md transition-colors"
+                  [class.bg-white]="salesPeriod() === 'monthly'"
+                  [class.text-slate-900]="salesPeriod() === 'monthly'"
+                  [class.text-slate-600]="salesPeriod() !== 'monthly'"
+                  [class.shadow-sm]="salesPeriod() === 'monthly'">
+            Monthly
+          </button>
+          <button (click)="setSalesPeriod('quarterly')" 
+                  class="px-3 py-1 text-sm font-medium rounded-md transition-colors"
+                  [class.bg-white]="salesPeriod() === 'quarterly'"
+                  [class.text-slate-900]="salesPeriod() === 'quarterly'"
+                  [class.text-slate-600]="salesPeriod() !== 'quarterly'"
+                  [class.shadow-sm]="salesPeriod() === 'quarterly'">
+            Quarterly
+          </button>
+          <button (click)="setSalesPeriod('yearly')" 
+                  class="px-3 py-1 text-sm font-medium rounded-md transition-colors"
+                  [class.bg-white]="salesPeriod() === 'yearly'"
+                  [class.text-slate-900]="salesPeriod() === 'yearly'"
+                  [class.text-slate-600]="salesPeriod() !== 'yearly'"
+                  [class.shadow-sm]="salesPeriod() === 'yearly'">
+            Yearly
+          </button>
+        </div>
+      </div>
+      <div class="relative h-80">
+        <canvas #salesChart></canvas>
+      </div>
+    </div>
+    
+    <!-- Top Performing Products -->
+    <div class="p-6 bg-white rounded-lg shadow">
+      <h2 class="text-xl font-semibold text-slate-900 mb-4">Top Products</h2>
+      <ul class="space-y-4">
+        @for (product of topProducts(); track product.productId) {
+          <li class="flex items-center space-x-4">
+            <div class="flex-shrink-0 w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center font-bold text-teal-600">
+              {{ product.name.charAt(0) }}
+            </div>
+            <div>
+              <p class="font-medium text-slate-800">{{ product.name }}</p>
+              <p class="text-sm text-slate-500">{{ product.unitsSold }} units sold</p>
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+</div>

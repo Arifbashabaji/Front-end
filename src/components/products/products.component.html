@@ -1,0 +1,258 @@
+<div class="p-4 sm:p-6 lg:p-8">
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+    <div class="flex-grow flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
+       <div class="relative w-full sm:w-auto">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+          <svg class="w-5 h-5 text-slate-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </span>
+        <input 
+          #searchInput
+          type="text" 
+          placeholder="Search by name or category..." 
+          (input)="onSearch(searchInput.value)"
+          [value]="searchTerm()"
+          class="w-full max-w-xs bg-white border border-slate-300 rounded-md py-2 pl-10 pr-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition shadow-sm">
+      </div>
+       <div class="relative w-full sm:w-auto">
+        <select 
+          id="category-filter"
+          (change)="onCategoryChange($event)"
+          [value]="selectedCategory()"
+          class="w-full sm:w-48 bg-white border border-slate-300 rounded-md py-2 pl-3 pr-10 text-slate-800 focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition shadow-sm appearance-none cursor-pointer">
+            <option value="all">All Categories</option>
+            @for (category of categories(); track category) {
+              <option [value]="category">{{ category }}</option>
+            }
+        </select>
+        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
+            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+        </span>
+      </div>
+    </div>
+    @if (isAdmin()) {
+      <button (click)="openAddModal()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 whitespace-nowrap shadow hover:shadow-lg">
+        Add Product
+      </button>
+    } @else {
+      @if(cartCount() > 0) {
+        <button (click)="goToCart()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 whitespace-nowrap shadow hover:shadow-lg flex items-center space-x-2">
+           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span>Go to Cart</span>
+          <span class="bg-teal-800 text-xs font-semibold text-white rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5 py-0.5">{{ cartCount() }}</span>
+        </button>
+      }
+    }
+  </div>
+
+  @if (isAdmin()) {
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-200">
+              <thead class="bg-slate-50">
+                  <tr>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Product</th>
+                      <th scope="col" class="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Category</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Price</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Stock</th>
+                      <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                  @for (product of paginatedProducts(); track product.id) {
+                      <tr class="hover:bg-slate-50 transition-colors">
+                          <td class="px-6 py-4 whitespace-nowrap">
+                              <div class="flex items-center">
+                                  <div class="flex-shrink-0 h-10 w-10">
+                                      <img class="h-10 w-10 rounded-md object-cover" [src]="product.imageUrl" [alt]="product.name">
+                                  </div>
+                                  <div class="ml-4">
+                                      <div class="text-sm font-medium text-slate-900">{{ product.name }}</div>
+                                  </div>
+                              </div>
+                          </td>
+                          <td class="hidden sm:table-cell px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ product.category }}</td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">₹{{ product.price.toFixed(2) }}</td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                            <div class="flex items-center">
+                              <span>{{ product.stock }}</span>
+                              @if (product.stock < product.lowStockThreshold) {
+                                @if (product.stock === 0) {
+                                  <span class="ml-2.5 px-2 py-0.5 text-xs font-semibold rounded-full bg-slate-200 text-slate-800">Out of Stock</span>
+                                } @else {
+                                  <span class="ml-2.5 px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">Low Stock</span>
+                                }
+                              } @else if (product.stock < product.lowStockThreshold * 1.25) {
+                                <span class="ml-2.5 px-2 py-0.5 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">Nearing Low</span>
+                              }
+                            </div>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div class="space-x-4">
+                                  <button (click)="openEditModal(product)" class="text-teal-600 hover:text-teal-900">Edit</button>
+                                  <button (click)="deleteProduct(product.id)" class="text-red-600 hover:text-red-900">Delete</button>
+                              </div>
+                          </td>
+                      </tr>
+                  } @empty {
+                      <tr>
+                          <td colspan="5">
+                               <div class="text-center py-16 px-6">
+                                  <h3 class="text-lg font-semibold text-slate-800">
+                                  @if (searchTerm() || selectedCategory() !== 'all') {
+                                      <span>No products found matching your criteria.</span>
+                                  } @else {
+                                      <span>No products in catalog.</span>
+                                  }
+                                  </h3>
+                                  <p class="text-slate-500 mt-2 text-sm">Try adjusting your search or filters, or add a new product to get started.</p>
+                              </div>
+                          </td>
+                      </tr>
+                  }
+              </tbody>
+          </table>
+      </div>
+    </div>
+  } @else {
+    <!-- User-facing Card View -->
+    @if (paginatedProducts().length > 0) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        @for (product of paginatedProducts(); track product.id) {
+          <div class="bg-white rounded-lg shadow overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 flex flex-col">
+            <div class="relative">
+              <img class="h-48 w-full object-cover" [src]="product.imageUrl" [alt]="product.name">
+              @if (product.stock === 0) {
+                <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <span class="text-white font-bold text-lg tracking-wider">Out of Stock</span>
+                </div>
+              }
+            </div>
+            <div class="p-4 flex-grow flex flex-col">
+              <p class="text-sm text-slate-500">{{ product.category }}</p>
+              <div class="h-12">
+                <h3 class="text-lg font-semibold text-slate-800 mt-1 line-clamp-2" [title]="product.name">{{ product.name }}</h3>
+              </div>
+              <div class="flex-grow"></div>
+              <p class="text-xl font-bold text-slate-900 mt-4">₹{{ product.price.toFixed(2) }}</p>
+            </div>
+            @let quantityInCart = getQuantityInCart(product.id);
+            <div class="p-4 pt-0 flex items-center justify-center">
+              @if (product.stock === 0) {
+                <button disabled class="w-full bg-slate-300 text-white py-2.5 rounded-md font-semibold cursor-not-allowed">
+                  Out of Stock
+                </button>
+              } @else {
+                @if (quantityInCart === 0) {
+                  <button (click)="addToCart(product)" class="w-full bg-teal-600 text-white py-2.5 rounded-md font-semibold hover:bg-teal-700 transition-colors">
+                    Add to Cart
+                  </button>
+                } @else {
+                  <div class="flex items-center justify-center space-x-2 w-full">
+                    <button (click)="decreaseQuantity(product)" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors font-bold text-lg">-</button>
+                    <span class="text-lg font-bold text-slate-800 min-w-[2.5rem] text-center">{{ quantityInCart }}</span>
+                    <button (click)="increaseQuantity(product)" [disabled]="quantityInCart >= product.stock" class="w-10 h-10 flex items-center justify-center rounded-full bg-teal-600 text-white hover:bg-teal-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-bold text-lg">+</button>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="text-center py-16 px-6 bg-white rounded-lg shadow">
+        <h3 class="text-lg font-semibold text-slate-800">
+          @if (searchTerm() || selectedCategory() !== 'all') {
+            <span>No products found matching your criteria.</span>
+          } @else {
+            <span>No products available right now.</span>
+          }
+        </h3>
+        <p class="text-slate-500 mt-2 text-sm">Try adjusting your search or filters, or check back later.</p>
+      </div>
+    }
+  }
+
+  <!-- Pagination Controls -->
+  @if (totalPages() > 1) {
+    <div class="flex items-center justify-between px-4 py-3 mt-6 bg-white rounded-lg shadow">
+      <div>
+        @if (filteredProducts().length > 0) {
+          <p class="text-sm text-slate-700">
+            Showing
+            <span class="font-medium">{{ (currentPage() - 1) * pageSize() + 1 }}</span>
+            to
+            <span class="font-medium">{{ currentPage() * pageSize() > filteredProducts().length ? filteredProducts().length : currentPage() * pageSize() }}</span>
+            of
+            <span class="font-medium">{{ filteredProducts().length }}</span>
+            results
+          </p>
+        }
+      </div>
+      <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+        <button (click)="previousPage()" [disabled]="currentPage() === 1" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition">
+          <span class="sr-only">Previous</span>
+          <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 010 1.06L9.06 10l3.73 3.71a.75.75 0 11-1.06 1.06l-4.25-4.25a.75.75 0 010-1.06l4.25-4.25a.75.75 0 011.06 0z" clip-rule="evenodd" /></svg>
+        </button>
+        <button (click)="nextPage()" [disabled]="currentPage() === totalPages()" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed transition">
+          <span class="sr-only">Next</span>
+          <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 010-1.06L10.94 10 7.21 6.29a.75.75 0 111.06-1.06l4.25 4.25a.75.75 0 010 1.06l-4.25-4.25a.75.75 0 01-1.06 0z" clip-rule="evenodd" /></svg>
+        </button>
+      </nav>
+    </div>
+  }
+</div>
+
+<!-- Modal -->
+@if (showModal()) {
+  <div class="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 transition-opacity">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md m-4">
+      <h2 class="text-2xl font-bold mb-6 text-slate-900">{{ isEditing() ? 'Edit Product' : 'Add New Product' }}</h2>
+      <form [formGroup]="productForm" (ngSubmit)="saveProduct()">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700">Product Image</label>
+            <div class="mt-1 flex items-center space-x-4">
+              <div class="flex-shrink-0 h-24 w-24 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden">
+                @if(imagePreviewUrl()) {
+                  <img [src]="imagePreviewUrl()" alt="Product image preview" class="h-full w-full object-cover">
+                } @else {
+                  <svg class="h-12 w-12 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                  </svg>
+                }
+              </div>
+              <label for="image-upload" class="cursor-pointer bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold py-2 px-4 rounded-lg transition-colors duration-200">
+                <span>Change Image</span>
+                <input id="image-upload" name="image-upload" type="file" class="sr-only" (change)="onFileSelected($event)" accept="image/png, image/jpeg, image/gif">
+              </label>
+            </div>
+          </div>
+          <div>
+            <label for="name" class="block text-sm font-medium text-slate-700">Product Name</label>
+            <input type="text" id="name" formControlName="name" class="mt-1 block w-full px-4 py-3 bg-white text-slate-800 placeholder-slate-400 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent sm:text-sm transition">
+          </div>
+          <div>
+            <label for="category" class="block text-sm font-medium text-slate-700">Category</label>
+            <input type="text" id="category" formControlName="category" class="mt-1 block w-full px-4 py-3 bg-white text-slate-800 placeholder-slate-400 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent sm:text-sm transition">
+          </div>
+          <div>
+            <label for="price" class="block text-sm font-medium text-slate-700">Price</label>
+            <input type="number" id="price" formControlName="price" class="mt-1 block w-full px-4 py-3 bg-white text-slate-800 placeholder-slate-400 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent sm:text-sm transition">
+          </div>
+          <div>
+            <label for="stock" class="block text-sm font-medium text-slate-700">Stock</label>
+            <input type="number" id="stock" formControlName="stock" class="mt-1 block w-full px-4 py-3 bg-white text-slate-800 placeholder-slate-400 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent sm:text-sm transition">
+          </div>
+        </div>
+        <div class="mt-8 flex justify-end space-x-4">
+          <button type="button" (click)="closeModal()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold py-2 px-4 rounded-lg transition-colors duration-200">Cancel</button>
+          <button type="submit" [disabled]="productForm.invalid" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

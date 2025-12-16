@@ -1,0 +1,80 @@
+<div class="p-4 sm:p-6 lg:p-8">
+  @if (inventoryItems().length > 0) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+      @for (item of inventoryItems(); track item.productId) {
+        @let status = getStockStatusInfo(item);
+        <div class="bg-white rounded-lg shadow flex flex-col items-center p-6 text-center transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1">
+          <h3 class="text-sm font-semibold text-slate-900 truncate w-full" [title]="item.productName">{{ item.productName }}</h3>
+          <p class="text-xs text-slate-500 mb-4">#{{ item.productId }}</p>
+
+          <div class="relative w-32 h-32 my-4">
+            <svg class="w-full h-full" viewBox="0 0 100 100">
+              <!-- Background circle -->
+              <circle class="text-slate-200" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+              <!-- Progress circle -->
+              <circle [class]="status.colorClass" stroke-width="10" [attr.stroke-dasharray]="status.circumference" [attr.stroke-dashoffset]="status.strokeDashoffset" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" style="transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 0.5s ease-in-out;" />
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span class="text-3xl font-bold text-slate-800">{{ item.stock }}</span>
+                <span class="text-xs text-slate-500">Units</span>
+            </div>
+          </div>
+          
+          <div class="mt-4">
+            @if (status.isLow) {
+              <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                Low Stock
+              </span>
+            } @else {
+              <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                In Stock
+              </span>
+            }
+          </div>
+          <div class="flex items-center space-x-1 mt-2">
+            <p class="text-xs text-slate-400">Threshold: {{ item.lowStockThreshold }}</p>
+            <button (click)="openEditModal(item)" class="text-slate-400 hover:text-teal-600 p-1 rounded-full transition-colors">
+              <span class="sr-only">Edit Threshold</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="bg-white rounded-lg shadow text-center py-16 px-6">
+      <h3 class="text-lg font-semibold text-slate-800">No inventory data available.</h3>
+      <p class="text-slate-500 mt-2 text-sm">Inventory levels for products will be displayed here.</p>
+    </div>
+  }
+</div>
+
+<!-- Edit Threshold Modal -->
+@if (showEditModal() && editingItem()) {
+  <div class="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 transition-opacity">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-sm m-4">
+      <h2 class="text-2xl font-bold mb-2 text-slate-900">Edit Threshold</h2>
+      <p class="text-slate-600 mb-6">for <span class="font-semibold">{{ editingItem()!.productName }}</span></p>
+      
+      <form (ngSubmit)="saveThreshold()">
+        <div>
+          <label for="threshold" class="block text-sm font-medium text-slate-700">Low Stock Threshold</label>
+          <input 
+            type="number" 
+            id="threshold" 
+            [(ngModel)]="newThresholdValue"
+            name="threshold"
+            class="mt-1 block w-full px-4 py-3 bg-white text-slate-800 placeholder-slate-400 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent sm:text-sm transition"
+            min="0">
+        </div>
+        
+        <div class="mt-8 flex justify-end space-x-4">
+          <button type="button" (click)="closeEditModal()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-800 font-bold py-2 px-4 rounded-lg transition-colors duration-200">Cancel</button>
+          <button type="submit" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

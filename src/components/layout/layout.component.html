@@ -1,0 +1,74 @@
+
+<div class="flex h-screen bg-slate-100">
+  <!-- Sidebar -->
+  <aside 
+    class="flex-shrink-0 p-4 flex flex-col bg-white/80 backdrop-blur-lg border-r border-slate-200 shadow-sm fixed inset-y-0 left-0 z-30 lg:relative lg:translate-x-0 transform transition-all duration-300 ease-in-out"
+    [class.w-64]="!isDesktopSidebarCollapsed()"
+    [class.w-20]="isDesktopSidebarCollapsed()"
+    [class.translate-x-0]="isSidebarOpen()"
+    [class.-translate-x-full]="!isSidebarOpen()">
+    
+    <div class="flex items-center justify-between mb-10 px-2">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-teal-600 rounded-lg shadow-md">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 text-white">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5A2.25 2.25 0 0115.75 11.25h.5a2.25 2.25 0 012.25 2.25V21M6 21v-7.5A2.25 2.25 0 018.25 11.25h.5A2.25 2.25 0 0111.25 13.5V21M3 5.25h18M4.5 5.25a2.25 2.25 0 01-2.25-2.25M6.75 5.25a2.25 2.25 0 00-2.25-2.25M11.25 5.25a2.25 2.25 0 01-2.25-2.25M13.5 5.25a2.25 2.25 0 00-2.25-2.25M17.25 5.25a2.25 2.25 0 01-2.25-2.25M19.5 5.25a2.25 2.25 0 00-2.25-2.25M4.5 21V9M19.5 21V9"/>
+          </svg>
+        </div>
+        <h1 class="text-xl font-bold text-slate-800" [class.lg:hidden]="isDesktopSidebarCollapsed()">Retail Edge</h1>
+      </div>
+       <button (click)="toggleDesktopSidebar()" class="hidden lg:block text-slate-500 hover:text-slate-800">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 transition-transform" [class.rotate-180]="!isDesktopSidebarCollapsed()">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+      </button>
+    </div>
+
+    <nav class="flex-1 space-y-2">
+      @for (item of navItems(); track item.id) {
+        <a [routerLink]="item.path"
+           routerLinkActive="bg-teal-50 text-teal-700 font-semibold"
+           [routerLinkActiveOptions]="{exact: true}"
+           (click)="isSidebarOpen.set(false)"
+           class="flex items-center space-x-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors duration-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+           [class.justify-center]="isDesktopSidebarCollapsed()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 flex-shrink-0" [innerHTML]="item.icon"></svg>
+          <span class="font-medium" [class.lg:hidden]="isDesktopSidebarCollapsed()">{{ item.name }}</span>
+        </a>
+      }
+    </nav>
+
+    <!-- Logout button -->
+    <div class="mt-auto">
+      <button (click)="logout()" 
+          class="flex w-full items-center space-x-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+          [class.justify-center]="isDesktopSidebarCollapsed()">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 flex-shrink-0">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+          </svg>
+          <span class="font-medium" [class.lg:hidden]="isDesktopSidebarCollapsed()">Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Backdrop for mobile sidebar -->
+  @if (isSidebarOpen()) {
+    <div (click)="isSidebarOpen.set(false)" class="fixed inset-0 bg-black/30 z-20 lg:hidden" aria-hidden="true"></div>
+  }
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col">
+    <header class="sticky top-0 bg-white/80 backdrop-blur-lg border-b border-slate-200 z-20">
+      <div class="flex items-center justify-between p-4 h-16">
+        <button (click)="toggleSidebar()" class="lg:hidden text-slate-500 hover:text-slate-800">
+           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <h1 class="text-xl font-semibold text-slate-900 ml-2 lg:ml-0">{{ currentViewName() }}</h1>
+      </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
