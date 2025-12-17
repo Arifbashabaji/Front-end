@@ -1,4 +1,16 @@
-// Migrated from index.tsx
-// Add your TypeScript code here
 
-console.log("This is the new index.ts file.");
+
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter, withHashLocation } from '@angular/router';
+import { provideZonelessChangeDetection } from '@angular/core';
+import { AppComponent } from './src/app.component';
+import { routes } from './src/app.routes';
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideZonelessChangeDetection(),
+    provideHttpClient(),
+    provideRouter(routes, withHashLocation())
+  ],
+}).catch(err => console.error(err));
